@@ -1,0 +1,118 @@
+% sigmoid_regression.m
+%
+%Solution to 4.3
+%Start by clearing the data and clearing the screen
+clear
+clc
+close all
+
+% Load the data
+[Countries, Features, Data] = loadUnicefData();
+
+% Split into training and testing data
+t = Data(:,2);
+X = Data(:,8:end);
+%X = normalizeData(X);
+
+
+%split data x into training data and testing data
+%First try 
+X_train = X(1:100,:);
+X_test = X(101:195,:);
+
+%get the dimension of the input X
+[~,d] = size(X_train);
+
+
+%define the training set and test set
+training_set = t(1:100);
+test_set = t(101:195);
+
+%define the design matrix with X, using only feature 11 (GNI Per Capita)
+%sort the data so it can be plotted correctly
+Feature_unsorted = X_train(:,11);
+Feature = sort(Feature_unsorted);
+
+%store the feature testing points for plotting
+Test_Feature = X_test(:,11);
+
+%Define my input parameters for the sigmoid function
+Mu1 = 100;
+Mu2 = 1000;
+s = 2000;
+
+%define the design matrix phi with the input parameter for a sigmoid
+%function
+Phi = designMatrix(Feature,'sigmoid', Mu1, s);
+
+%find coefficients that maximize likelihood
+w1 = pinv(Phi)*training_set;
+
+%predict the output values using the calculated coefficients
+%y_3 = bias + w*sigmoid1(x) + w*sigmoid2(x)
+y1 = w1(1) + w1(2)*1./(1+exp((Mu1-Feature)/s));
+
+%Now test the function with the test values
+Feature_test = X_test (:,11);    
+
+%Test the function with the test value of X
+y_1test = w1(1) + w1(2)*1./(1+exp((Mu1-Feature_test)/s));
+
+%now calculate the training error against the training set by using the
+%Root mean square error
+%divide the root mean error by the number of data points n
+[n,~] = size(training_set);    
+Training_error = sqrt( sum((y1-training_set).^2)/n );
+
+%now calculate the testing error against the testing set by using the
+%Root mean square error
+Testing_error = sqrt( sum((y_1test-test_set).^2)/n );
+
+%now try with a different sigmoid function using Mu2
+%define the design matrix phi with the input parameter for a sigmoid
+%function
+Phi = designMatrix(Feature,'sigmoid', Mu2, s);
+
+%find coefficients that maximize likelihood
+w2 = pinv(Phi)*training_set;
+
+%predict the output values using the calculated coefficients
+%y_3 = bias + w*sigmoid1(x) + w*sigmoid2(x)
+y2 = w2(1) + w2(2)*1./(1+exp((Mu2-Feature)/s));
+
+%Now test the function with the test values
+Feature_test = X_test (:,11);    
+
+%Test the function with the test value of X
+y_2test = w2(1) + w2(2)*1./(1+exp((Mu2-Feature_test)/s));
+
+%now calculate the training error against the training set by using the
+%Root mean square error
+%divide the root mean error by the number of data points n
+[n,~] = size(training_set);    
+Training_error2 = sqrt( sum((y2-training_set).^2)/n );
+
+%now calculate the testing error against the testing set by using the
+%Root mean square error
+Testing_error2 = sqrt( sum((y_2test-test_set).^2)/n );
+
+%plot the data
+%Start by plotting the training function in a thick black line
+%Initialize an x value starting at zero and going up to the max value of
+%the feature being examined. This will produce a smoother curve of the
+%predicted function
+x = 0:0.1:max(Feature);
+y_smooth1 = w1(1) + w1(2)*1./(1+exp((Mu1-x)/s)) % using Mu1 and w1
+y_smooth2 = w2(1) + w2(2)*1./(1+exp((Mu2-x)/s)) % using M
+plot(x,y_smooth1,'k','Linewidth', 2)
+hold on
+
+%plot the training points with green stars
+plot(Feature_unsorted, training_set,'g*')
+hold on
+
+%plot the testing points with red o's
+plot(Test_Feature, test_set,'ro')
+
+
+
